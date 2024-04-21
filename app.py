@@ -1,10 +1,20 @@
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 from flask import Flask, redirect, url_for, render_template, request
 from pymongo import MongoClient
 from bson import ObjectId
 from werkzeug.utils import secure_filename
-client = MongoClient('mongodb+srv://test:sparta@cluster0.zfjim4j.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
-db = client.dbfruit
-import os
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
+MONGODB_URI = os.environ.get("MONGODB_URI")
+DB_NAME =  os.environ.get("DB_NAME")
+
+client = MongoClient(MONGODB_URI)
+
+db = client[DB_NAME]
 
 app=Flask(__name__)
 
@@ -39,9 +49,9 @@ def addFruit():
             'nama': nama,
             'harga': harga,
             'gambar': nama_file_gambar,
-            'deskirpsi': deskripsi
+            'deskripsi': deskripsi
         }
-        db.fruit.inser_one(doc)
+        db.fruit.insert_one(doc)
         return redirect(url_for("fruit"))
     return render_template('AddFruit.html')
 
@@ -77,7 +87,7 @@ def editFruit(_id):
 @app.route('/deleteFruit/<_id>', methods=['GET', 'POST'])
 def deleteFruit(_id):
     id = ObjectId(_id)
-    db.fruit.delete_one({"_id": ObjectId(_id)})
+    db.fruit.delete_one({"_id": id}) 
     return redirect(url_for("fruit"))
 
 if __name__ =='__main__':
